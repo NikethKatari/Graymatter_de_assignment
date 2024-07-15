@@ -1,0 +1,47 @@
+Day 1 of training
+
+Things learned - 
+->creating databases, schema
+->application of DDL,DML commands
+->indexing
+->altering constraints
+->create view
+->temporary tables and cte
+
+select * from [Person].[BusinessEntityContact]
+select * from  [Person].[Person] as p1 inner join [Person].[BusinessEntity]  as p2
+on p1.BusinessEntityID=p2.BusinessEntityID and p1.BusinessEntityID<45
+create view vyu as
+select [BusinessEntityID],[PersonType],[MiddleName],[rowguid]
+from [Person].[Person]
+where [BusinessEntityID]<20
+select * from vyu
+select * from [Person].[PhoneNumberType]
+insert into [Person].[PhoneNumberType]([Name]) values('abc')
+select * from [Person].[ContactType]
+alter table [Person].[ContactType]
+add Newcol varchar(20)
+select * from [Person].[ContactType]
+
+create table #ttab(
+us_id varchar(20),
+name varchar(20))
+insert into #ttab values('1','anra')
+create table ffirst(
+us_id varchar(20),
+name varchar(20))
+insert into ffirst values('45','anraaaa')
+insert into ffirst values('54','reyy')
+insert into ffirst values('65','bharath')
+insert into #ttab
+select * from ffirst
+where us_id<60
+select * from #ttab
+
+with fir_cte as(
+select * from ffirst
+
+
+)
+select * from fir_cte
+--run whole cte at a time
