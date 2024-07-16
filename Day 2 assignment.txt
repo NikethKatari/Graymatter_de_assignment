@@ -1,0 +1,236 @@
+--Day 2 exercise
+create table TrigEx2(
+trig_id int identity(1,1) primary key,
+trig_date datetime,
+trig_name nvarchar(200),
+delete_date datetime,
+delete_name nvarchar(200),
+update_date datetime,
+update_name nvarchar(200),
+);
+go
+
+create trigger trig_insert_05
+on [Sales].[SalesReason]
+after insert
+as
+begin
+  insert into TrigEx2(trig_date,trig_name) values(getdate(),suser_sname());
+end;
+go
+--do not change the trigger after creaing it
+create trigger trig_insert_055
+on [Sales].[SalesReason]
+after update
+as
+begin
+  insert into TrigEx2(update_date,update_name) values(getdate(),suser_sname());
+end;
+go
+
+create trigger trig_insert_056
+on [Sales].[SalesReason]
+after delete
+as
+begin
+  insert into TrigEx2(delete_date,delete_name) values(getdate(),suser_sname());
+end;
+go
+select * from TrigEx2
+
+insert into [Sales].[SalesReason] values('ttt','oter',getdate())
+
+select * from TrigEx2
+update [Sales].[SalesReason]
+set Name='pqr' where [SalesReasonID] = 3
+
+
+
+
+
+create table InsteadOfff(
+[ContactTypeID] int not null,
+[Name] varchar(200),
+InsertedBy datetime
+);
+create trigger trig_insteadOfInsertt
+on [Person].[ContactType]
+instead of insert
+as
+begin 
+ insert into InsteadOff(personID,accountNO,InsertedBy)
+ select
+   i.personID, i.accountNO, getdate()
+ from inserted i
+end;
+GO
+
+
+
+
+
+create table productt(
+productID int not null,
+UnitPrice decimal(10,2),
+Quantity int,
+totalprice decimal(10,2)
+)
+insert into productt values(1,3.0,2,4.0)
+insert into productt values(1,5.0,9,7.0)
+CREATE FUNCTION CalcPrice(@UnitPrice decimal(10,2), @Quantity int)
+returns decimal(10,2)
+as 
+begin
+   declare @totalprice decimal(10,2)
+   set @totalprice = @UnitPrice*@Quantity
+   return @totalprice
+end
+
+--using scalar function
+select productID,UnitPrice, Quantity, dbo.CalcPrice(UnitPrice,Quantity) as totalprice 
+from productt
+
+--create a table valued function
+create function GetCustomerByCountry(@[CountryRegionCode] nvarchar(3))
+returns table
+
+
+
+--start a transaction
+begin transaction
+--Variable for warehouse IDs and quantity to transfer
+declare @FromWarehouseID int =1
+declare @ToWarehouseID int = 2
+declare @InventID int = 1
+declare @QuantityToTransfer int=10
+
+--perform the inventory transfer
+update [Production].[ProductInventory]
+set [Quantity]=[Quantity]-@QuantityToTransfer
+where ProductID=@InventID and [LocationID]=@FromWarehouseID
+
+insert into [Production].[ProductInventory](ProductID, LocationID, Shelf, Bin, Quantity) 
+values(@InventID, @ToWarehouseID, 'D', '1', @QuantityToTransfer)
+--commit transaction
+commit transaction
+print 'Inventory transfer completed successfully.'
+select * from [Production].[ProductInventory]
+
+
+declare @SalesOrderID int = 74078
+with sec_cte as(
+  select c.[CustomerID], sum([TotalDue]) as totalsalesamount
+  from [Sales].[SalesOrderHeader] as s inner join [Sales].[Customer] as c on s.CustomerID=c.CustomerID
+  where c.CustomerID=25033
+  group by c.[CustomerID]
+)
+select * from sec_cte
+
+--@declare name string
+
+--with sec_cte
+--select @name=totalsalesamount from sec_cte
+
+create table #tabl(
+SalesOrderi int,
+orderdate date,
+totaldue int
+)
+
+declare @SalesOrderID int = 74078
+
+insert into #tabl
+select
+  SalesOrderID,
+  OrderDate,
+  TotalDue
+from 
+  Sales.SalesOrderHeader
+where
+  SalesOrderID=@SalesOrderID
+
+select * from #tabl
+update #tabl
+set totaldue = 500 where SalesOrderi=74078
+
+
+create table dbo.SalesOrderChangeLogg(
+changeID int identity(1,1) primary key,
+SalesOrderID int,
+OldTotalDue money,
+NewTotalDue money,
+ChangeDate datetime
+)
+create trigger updtrig
+on [Sales].[SalesOrderHeader]
+after update 
+as
+begin
+   declare @SalesOrderID int, @OlTaxamt money, @NewTotaTaxamt money
+
+   select
+      @SalesOrderID=i.SalesOrderID,
+	  @OlTaxamt=d.TaxAmt,
+	  @NewTotaTaxamt=i.TaxAmt
+   from
+      inserted i
+	  inner join deleted d on i.SalesOrderID=d.SalesOrderID
+   insert into dbo.SalesOrderChangeLogg(SalesOrderID,OldTotalDue,NewTotalDue,ChangeDate) values (@SalesOrderID,@OlTaxamt,@NewTotaTaxamt,getdate())
+end
+update [Sales].[SalesOrderHeader]
+set TaxAmt=500.263 where SalesOrderID = 74080
+select * from dbo.SalesOrderChangeLogg
+
+--create a storage procedure t calculate total sales for a specific customer and update
+create procedure CalcnUpdatee
+  @CustomerID int,
+  @SalesOrderID int,
+  @NewTotalDue money
+as
+begin
+  begin transaction;
+  declare @TotalSales money;
+  with sec_cte as(
+  select c.[CustomerID], sum([TotalDue]) as totalsalesamount
+  from [Sales].[SalesOrderHeader] as s inner join [Sales].[Customer] as c on s.CustomerID=c.CustomerID
+  where c.CustomerID=25033
+  group by c.[CustomerID]
+  )
+  select * from sec_cte
+
+  insert into #tabl
+  select
+  SalesOrderID,
+  OrderDate,
+  TotalDue
+  from 
+  Sales.SalesOrderHeader
+  where
+  SalesOrderID=@SalesOrderID
+
+  select * from #tabl
+  update #tabl
+  set totaldue = 500 where SalesOrderi=74078
+  update [Sales].[SalesOrderHeader]
+  set TaxAmt=500.263 where SalesOrderID = 74080
+  select * from dbo.SalesOrderChangeLogg
+  commit transaction
+  End
+  go
+
+  exec CalcnUpdatee @CustomerID = 22238,
+  @SalesOrderID = 74083,
+  @NewTotalDue =537.389
+
+
+
+create procedure newproc
+@startdate datetime,
+@enddate datetime
+as 
+begin
+  begin transaction
+  select ProductID, sum(OrderQty) as TotalQtyy
+  from Sales.SalesOrderDetail sd inner join Sales.SalesOrderHeader sh on sd.SalesOrderID=sh.SalesOrderID
+  where sh.OrderDate between @startdate and @enddate 
+  group by ProductID
