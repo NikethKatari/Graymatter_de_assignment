@@ -1,0 +1,134 @@
+--scd 0
+create table scd_zero(
+scd_id int not null,
+scd_name varchar(20) not null,
+s_date datetime,
+joined_date datetime
+)
+insert into scd_zero values(1,'static',2011-06-19 , 2011-06-15)
+select * from scd_zero
+
+--scd 1
+create table employee(
+emp_id int not null,
+emp_name varchar(20),
+emp_dep varchar(20)
+)
+insert into employee values(1,'bharath','abc')
+insert into employee values(2,'varun','pqr')
+update employee
+set emp_dep = 'rst'
+where emp_id=2
+
+select * from employee
+--scd2
+create table customer_scd2(
+s_key int identity(1,1) not null,
+customer_id int not null,
+cus_name varchar(20),
+s_date datetime,
+e_date datetime,
+flag varchar(2)
+)
+insert into customer_scd2 values(1, 'abc', 2011-06-07, NULL,'Y')
+insert into customer_scd2 values(2, 'bsd', 2011-06-13, NULL,'Y')
+update customer_scd2 
+set e_date=getdate(), flag = 'N'
+where customer_id=2 and e_date is null
+insert into customer_scd2 values(2,'bsd',GETDATE(),null,'Y')
+select * from customer_scd2
+
+--scd 3
+create table worker_tab(
+worker_id int not null,
+worker_name varchar(20),
+worker_age int,
+w_location varchar(20),
+active varchar(2)
+)
+insert into worker_tab values(1,'aaaa',45,'newyork','Y')
+insert into worker_tab values(2,'abba',54,'DC','Y')
+alter table worker_tab
+add w_curlocation varchar(20)
+
+update worker_tab
+set w_curlocation ='new jersey',active='N'
+where worker_id=1
+
+select * from worker_tab
+
+--enable cdc in your database
+exec sys.sp_cdc_enable_db;
+--enable cdc on a table
+exec sys.sp_cdc_enable_table
+  @source_schema=N'dbo',
+  @source_name=N'customer_scd2',
+  @role_name=null;
+
+select * from dbo.customer_scd2
+select * from [cdc].[dbo_customer_scd2_CT]
+
+insert into customer_scd2(customer_id,cus_name) values(4,'hfga')
+delete from customer_scd2
+where customer_id=4
+insert into customer_scd2(customer_id,cus_name) values(5,'vbja')
+insert into customer_scd2(customer_id,cus_name) values(6,'chefa')
+insert into customer_scd2(customer_id,cus_name) values(7,'cdhwehfa')
+delete from customer_scd2
+where customer_id=6
+
+select * from [cdc].[dbo_customer_scd2_CT]
+
+--merging 
+create table ttemptab(
+emp_id int not null,
+emp_name varchar(20),
+emp_dep varchar(20)
+)
+insert into ttemptab values(1,'bharth','abc')
+insert into ttemptab values(2,'varun','rst')
+insert into ttemptab values(5,'tempone','tem')
+insert into ttemptab values(6,'eufwe','eufiw')
+
+
+
+select * from ttemptab
+
+create table #emploo(
+emp_id int not null,
+emp_name varchar(20),
+emp_dep varchar(20)
+)
+insert into #emploo values(1,'bharath','abc')
+insert into #emploo values(2,'varun','rst')
+insert into #emploo values(12,'ggggg','aaaa')
+insert into #emploo values(13,'hhhhh','bbbbb')
+
+select * from #emploo
+merge ttemptab as target
+using #emploo as source
+on (target.emp_id = source.emp_id)
+when matched and (target.emp_name<>source.emp_name or target.emp_dep <> source.emp_dep)
+   then update set target.emp_name=source.emp_name
+when not matched by target
+   then insert values(source.emp_id,source.emp_name,source.emp_dep);
+
+select * from ttemptab
+
+alter table ttemptab
+add IsCurrent int
+
+update ttemptab
+set IsCurrent=1
+
+update ttemptab
+set IsCurrent=0
+where emp_id in(
+  select emp_id
+  from ttemptab
+  where IsCurrent=1
+) and emp_id not in(
+  select emp_id
+  from #emploo
+)
+select * from ttemptab
