@@ -1,0 +1,333 @@
+'''1. Data Manipulation with Pandas:
+ Given a dataset in the form of a dictionary, convert it to a DataFrame and perform 
+the following tasks:
+ Remove rows with missing values.
+ Group the data by 'Product' and calculate the total sales for each product.
+ Sort the results by total sales in descending order.
+ Create a pivot table that shows the sum of sales for each product, broken down 
+by month.'''
+
+import pandas as pd
+
+data = {
+    'Product': ['A', 'B', 'A', 'C', 'B', 'A', 'C', 'B', None],
+    'Sales': [200, 150, 300, None, 100, 250, 150, 120, 180],
+    'Month': ['2024-01', '2024-01', '2024-02', '2024-02', '2024-03', '2024-03', '2024-04', '2024-04', '2024-05']
+}
+
+df = pd.DataFrame(data)
+
+df_cleaned = df.dropna()
+
+grouped_sales = df_cleaned.groupby('Product')['Sales'].sum()
+
+sorted_sales = grouped_sales.sort_values(ascending=False)
+
+# Print the sorted sales
+print("Total sales by product (sorted):")
+print(sorted_sales)
+
+#  Create a pivot table that shows the sum of sales for each product, broken down by month
+pivot_table = pd.pivot_table(df_cleaned, values='Sales', index='Product', columns='Month', aggfunc='sum', fill_value=0)
+
+# Print the pivot table
+print("\nPivot table showing sum of sales for each product, broken down by month:")
+print(pivot_table)
+'''4. Data Visualization:
+ Using Matplotlib, create a line chart showing the trend of sales over time from 
+the given dataset.
+ Customize the chart with labels, title, and legend.
+ Create a scatter plot showing the relationship between two numerical columns 
+in a DataFrame. Add a trend line to the scatter plot.'''
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+data=[
+    {'Date' : '2024-07-24','Sales' : 300},
+    {'Date' : '2024-07-25','Sales' : 400},
+    {'Date' : '2024-07-26','Sales' : 500},
+    {'Date' : '2024-07-27','Sales' : 600}
+]
+
+df = pd.DataFrame(data)
+
+# Plotting
+plt.figure(figsize=(10,10))
+plt.plot(df['Date'], df['Sales'],marker = 'o', linestyle='-', color='r', label='Sales')
+
+# Adding labels and title
+plt.xlabel('Date')
+plt.ylabel('Sales')
+plt.title('Sales Trend Over Time')
+plt.legend()
+
+# Adding grid
+plt.grid(True)
+
+# Display the plot
+plt.tight_layout()
+plt.show()
+
+'''8. ETL Process:
+ Simulate an ETL process using Python that extracts data from a list of 
+dictionaries, transforms it by normalizing numeric ϐields, and loads it into a 
+Pandas DataFrame.
+ Extend the ETL process to include a validation step that checks for data quality 
+issues (e.g., missing values, outliers) before loading the data into the DataFrame.'''
+
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+
+data = [
+    {"id": 1, "name": "Alice", "age": 34},
+    {"id": 2, "name": "Bob", "age": 45},
+    {"id": 3, "name": "Charlie", "age": 23},
+    {"id": 4, "name": "David", "age": 29},
+    {"id": 5, "name": None, "age": 50},  
+    {"id": 6, "name": "Eve", "age": None}, 
+    {"id": 7, "name": "Frank", "age": 30}  
+]
+df=pd.DataFrame(data)
+def normalize_data(df,column_name):
+    min_val=df[column_name].min()
+    max_val=df[column_name].max()
+    df[column_name]=(df[column_name]-min_val)/(max_val-min_val)
+    return df
+def validate_data(df):
+    issues = []
+
+    if df.isnull().values.any():
+        issues.append("Data contains missing values.")
+  
+    numeric_df = df.select_dtypes(include=['int64', 'float64'])
+    z_scores = (numeric_df - numeric_df.mean()) / numeric_df.std()
+    if ((z_scores.abs() > 3).any().any()):
+        issues.append("Data contains outliers.")
+    
+    return issues
+
+def etl_process(data):
+ 
+    extracted_data = pd.DataFrame(data)
+    
+    validation_issues = validate_data(extracted_data)
+    if validation_issues:
+        print("Validation issues found:")
+        for issue in validation_issues:
+            print(f" - {issue}")
+        return None  
+    transformed_data = normalize_data(extracted_data,'age')
+    
+
+    df = pd.DataFrame(transformed_data)
+    
+    return df
+
+df = etl_process(data)
+
+if df is not None:
+    print(df)
+
+'''9. Data Normalization:
+ Write a function that normalizes the values in a DataFrame column to a range 
+between 0 and 1.
+ Write a function that standardizes the values in a DataFrame column (mean=0, 
+standard deviation=1).'''
+
+import pandas as pd
+
+def normalize_column(df, column_name):
+    min_value = df[column_name].min()
+    max_value = df[column_name].max()
+    df[column_name] = (df[column_name] - min_value) / (max_value - min_value)
+    return df
+
+data = {
+    'A': [1, 2, 3, 4, 5],
+    'B': [10, 20, 30, 40, 50]
+}
+df = pd.DataFrame(data)
+print("Original DataFrame:")
+print(df)
+
+df_normalized = normalize_column(df, 'B')
+print("\nNormalized DataFrame:")
+print(df_normalized)
+
+import pandas as pd
+
+def standardize_column(df, column_name):
+    
+    mean_value = df[column_name].mean()
+    std_dev = df[column_name].std()
+    df[column_name] = (df[column_name] - mean_value) / std_dev
+    return df
+
+data = {
+    'A': [1, 2, 3, 4, 5],
+    'B': [10, 20, 30, 40, 50]
+}
+df = pd.DataFrame(data)
+print("Original DataFrame:")
+print(df)
+
+df_standardized = standardize_column(df, 'B')
+print("\nStandardized DataFrame:")
+print(df_standardized)
+
+# Online Python compiler (interpreter) to run Python online.
+# Write Python 3 code in this online editor and run it.
+'''3. Lambda Functions and Map-Reduce:'''
+'''a. Use a lambda function to ϐilter out even numbers from a list of integers.'''
+li=[5,34,579,124,79,7,356,7685,653,8]
+res=filter(lambda x:x%2==0,li)
+li1=list(res)
+print(li1)
+
+'''b. Use the reduce function to calculate the product of the remaining numbers.'''
+from functools import reduce
+res1=reduce(lambda a,b:a*b ,li1 )
+print(res1)
+
+'''c. Use a lambda function with the ϐilter function to remove words from a list that are shorter than 4 characters. Then, use reduce to concatenate the remaining words into a single string.'''
+from functools import reduce
+
+words = ["apple", "orange", "banana", "pear", "grape", "kiwi"]
+long_words = list(filter(lambda word: len(word) > 4, words))
+print("Words longer than 4 characters:", long_words)
+concatenated_string = reduce(lambda x, y: x + " " + y, long_words)
+print( concatenated_string)
+
+'''5. Data Aggregation:'''
+'''a. Given a list of dictionaries representing transactions, write a function to aggregate the total amount spent by each user.'''
+def aggreg(transactions):
+    user_spent = {}
+
+    for dictt in transactions:
+        user_id = dictt['user_id']
+        amount = dictt['amount']
+
+        if user_id in user_spent:
+            user_spent[user_id] += amount
+        else:
+            user_spent[user_id] = amount
+    
+    return user_spent
+transactions=[
+    {'user_id':'abc','amount':45},
+    {'user_id':'def','amount':60},
+    {'user_id':'hij','amount':70},
+    {'user_id':'def','amount':80}
+    ]
+print(aggreg(transactions))
+'''b. Write a function that calculates the moving average of the total amount spent by each user over a speciϐied window size.'''
+
+
+
+'''6. Exception Handling:'''
+'''a. Write a function that handles division by zero and returns a meaningful error message when a division by zero occurs.'''
+def division(a, b):
+    try:
+        res = a / b
+        return res
+    except ZeroDivisionError:
+        return "Error: Division by zero is not allowed."
+
+print(division(5,6)) 
+print(division(7, 0))  
+
+'''b. Write a function that takes a list of ϐile paths and attempts to open each one, handling FileNotFoundError, PermissionError, and IOError, and logging the results.'''
+def open_files(file_paths):
+    results = {}
+    
+    for path in file_paths:
+        try:
+            with open(path, 'r') as file:
+                content = file.read()
+                results[path] = {"status": "Success", "content": content}
+        except FileNotFoundError:
+            results[path] = {"status": "Error", "message": "File not found."}
+        except PermissionError:
+            results[path] = {"status": "Error", "message": "Permission denied."}
+        except IOError as e:
+            results[path] = {"status": "Error", "message": f"IOError: {e}"}
+    
+    return results
+    
+'''7. Working with Dates:'''
+'''a. Write a function that takes a list of date strings in various formats and converts them to a standardized format (YYYY-MM-DD).'''
+def standardize_dates(date_strings):
+    def parse_date(date_str):
+        for separator in ['-', '/', '.']:
+            parts = date_str.split(separator)
+            if len(parts) == 3:
+                break
+        else:
+            return None  
+        if len(parts[0]) == 4:
+            year, month, day = parts
+        elif len(parts[2]) == 4:
+            day, month, year = parts
+        else:
+            month, day, year = parts
+        
+        return f"{year}-{month}-{day}"
+
+    standard_dates = [parse_date(date_str) for date_str in date_strings]
+    return standard_dates
+
+dates = [
+    "2021-12-25",
+    "25-12-2021",
+    "12/25/2021",
+    "2021/12/25",
+    "25.12.2021",
+    "12.25.2021"
+]
+res = standardize_dates(dates)
+print(res)
+
+'''b. Write a function that calculates the number of business days between two given dates, excluding weekends and holidays.'''
+from datetime import datetime, timedelta
+
+def calculate_business_days(start_date_str, end_date_str, holidays):
+    start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+   
+    holiday_dates = set(datetime.strptime(holiday, "%Y-%m-%d") for holiday in holidays)
+   
+    business_days = 0
+    
+    current_date = start_date
+    while current_date <= end_date:
+ 
+        if current_date.weekday() < 5 and current_date not in holiday_dates:
+            business_days += 1
+        current_date += timedelta(days=1)
+    
+    return business_days
+
+start_date = "2023-07-01"
+end_date = "2023-07-31"
+holidays = ["2023-07-04", "2023-07-20"]
+
+business_days = calculate_business_days(start_date, end_date, holidays)
+print(f"Number of business days: {business_days}")
+
+
+'''10.   '''
+import math
+
+numbers = [4, 9, 16, 25, 36, 49, 64]
+even_roots = [math.sqrt(num) for num in numbers if num % 2 == 0]
+print( even_roots)
+
+
+
+scores = [("Alice", 85), ("Bob", 75), ("Charlie", 95), ("David", 65)]
+average_score = sum(score for name, score in scores) / len(scores)
+names_above_average = [name for name, score in scores if score > average_score]
+print("Names of students who scored above average:", names_above_average)
