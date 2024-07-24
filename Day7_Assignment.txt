@@ -1,0 +1,443 @@
+# Online Python compiler (interpreter) to run Python online.
+# Write Python 3 code in this online editor and run it.
+'''1. List Comprehensions'''
+'''a.Write a list comprehension that generates a list of squares of the numbers from 1 to 10.'''
+square_li = [x**2 for x in range(1,11)]
+print(square_li)
+
+'''b. Write a list comprehension to extract all the vowels from the string "hello world".'''
+vowel_li=[char for char in 'hello world' if char in "aeiou"]
+print(vowel_li)
+
+
+'''2. Dictionary Comprehension'''
+'''a. Create a dictionary where the keys are numbers from 1 to 5 and the values are the cubes of the keys.'''
+dict_one={x:x**3 for x in range(1,6)}
+print(dict_one)
+
+'''b. Create a dictionary where the keys are the ϐirst letters of the words in the list ["apple", "banana", "cherry"] and the values are the words themselves'''
+li=['apple','banana','cherry']
+dict_two={item[0]:item for item in li}
+print(dict_two)
+
+'''3. Lambda Functions'''
+'''a. Write a lambda function that adds 10 to a given number and use it to add 10 to the number 5.'''
+x=lambda a : a+10
+print(x(5))
+
+'''b. Write a lambda function that checks if a number is even and use it to test the number 4.'''
+x=lambda a:True if a%2==0 else False
+print(x(4))
+
+'''4. Filter Function'''
+'''a. Use the ϐilter function to ϐilter out the odd numbers from the list [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].'''
+li=[1, 2, 3, 4, 5, 6, 7, 8, 9, 
+10]
+ans=filter(lambda a:a%2==0,li)
+print(list(ans))
+
+'''b. Use the ϐilter function to remove all strings shorter than 4 characters from the list ["cat", "dog", "elephant", "rat"].'''
+animal=["cat", "dog", "elephant", "rat"]
+res=filter(lambda s:len(s)>=4,animal)
+print(list(res))
+
+'''5. Map Function'''
+'''a. Use the map function to double all the numbers in the list [1, 2, 3, 4, 5].'''
+num= [1, 2, 3, 4, 5]
+doubled = list(map(lambda x: x * 2, num))
+print(doubled)
+
+'''b. Use the map function to convert a list of integers [1, 2, 3] to their corresponding string representations'''
+num5=[1,2,3]
+map5=map(lambda x:str(x),num5)
+print(list(map5))
+
+'''6. Reduce Function'''
+'''a. Use the reduce function to ϐind the product of the numbers in the list [1, 2, 3, 4, 5].'''
+from functools import reduce
+num6=[1,2,3,4,5]
+red6=reduce(lambda a,b:a*b,num6)
+print(red6)
+
+'''b. Use the reduce function to concatenate a list of strings ["Hello", "World", "from", "Python"] into a single string'''
+string_6=["Hello", "World", "from", "Python"]
+red6b=reduce(lambda a,b:a +' '+ b,string_6)
+print(red6b)
+
+'''7. Generator Functions'''
+'''a. Create a generator function that yields the ϐirst 5 even numbers.'''
+def even_generator():
+    n = 2
+    count = 0
+    while count < 5:
+        yield n
+        n += 2
+        count += 1
+
+even_gen = even_generator()
+
+for number in even_gen:
+    print(number)
+   
+'''b. Create a generator function that yields numbers in the Fibonacci sequence up to the 
+10th number.'''
+def fib():
+    a=0
+    b=1
+    count=0
+    while count<10:
+        yield a
+        c=a+b
+        a=b
+        b=c
+        count+=1
+ress=fib()
+for num in ress:
+  print(num)
+
+'''8. Handling Exceptions'''
+'''a. Write a function that takes two numbers and returns their division, handling the division by zero exception.'''
+def divide(a, b):
+    try:
+        result = a / b
+        return result
+    except ZeroDivisionError:
+        print("can't be divided!")
+num1 = 10
+num2 = 0
+
+print(divide(num1, num2))
+
+'''b. Write a function that reads a ϐile and handles the ϐile not found exception'''
+def read_file(filename):
+    try:
+        with open(filename, 'r') as file:
+            content = file.read()
+        return content
+    except FileNotFoundError:
+        print(f"Error: The file '{filename}' was not found.")
+        return None
+
+filename = "example.txt"
+file_content = read_file(filename)
+if file_content is not None:
+    print(f"Content of '{filename}':")
+    print(file_content)
+
+
+'''9. File I/O'''
+'''a. Write a program that writes the string "Hello, World!" to a ϐile and then reads it back.'''
+
+def write_and_read():
+    with open("hello.txt", 'w') as file:
+        file.write("Hello, World!")
+
+    with open("hello.txt", 'r') as file:
+        content = file.read()
+        print(content)
+
+write_and_read()
+
+'''b. Write a program that appends the string "Goodbye!" to an existing ϐile and then reads and prints the ϐile content.'''
+
+def append_and_read():
+    with open("goodbye.txt", 'a') as file:
+        file.write("Goodbye!\n")
+
+    with open("goodbye.txt", 'r') as file:
+        content = file.read()
+        print("Content read from file:")
+        print(content)
+
+append_and_read()
+
+'''10. Regular Expressions'''
+'''a. Use regular expressions to ϐind all the words starting with 'a' in the string "apple and banana are amazing".'''
+
+import re
+
+t = "apple and banana are amazing"
+words = re.findall(r'\b[aA]\w+', t)
+print(words)
+
+'''b. Use regular expressions to extract all the email addresses from the string "contact us at email@example.com or admin@site.org".'''
+import re
+
+text = "contact us at email@example.com or admin@site.org"
+email_addresses = re.findall(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', text)
+print(email_addresses)
+
+'''11. Classes and Objects'''
+'''a. Create a class Person with attributes name and age. Instantiate an object of this class and print its attributes'''
+class Person:
+     def __init__(self, name, age):
+        self.name = name
+        self.age = age
+personobj=Person('bobby',45)
+print(personobj.name)
+print(personobj.age)
+
+'''b.Create a class Car with attributes make, model, and year. Instantiate an object of this class and print its attributes'''
+class Car:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+car1 = Car("Toyota", "Camry", 2023)
+
+print("Make: "+car1.make)
+print(f"Model: {car1.model}")
+print(f"Year: {car1.year}")
+
+'''12. Inheritance'''
+'''a. Create a class Employee that inherits from the Person class and adds an attribute salary. Instantiate an object of Employee and print all its attributes.'''
+class Personn:
+    def __init__(self,name,age):
+        self.name=name
+        self.age=age
+        
+class Employee(Personn):
+    def __init__(self,name,age,salary):
+        super().__init__(name,age)
+        self.salary=salary
+empobj=Employee('hari',7,10000)
+print(empobj.salary)
+print(empobj.name)
+print(empobj.age)
+
+'''b. Create a class Manager that inherits from Employee and adds an attribute department. Instantiate an object of Manager and print all its attributes.'''
+
+class Manager(Employee):
+    def __init__(self, name, age, salary, department):
+        super().__init__(name, age, salary)
+        self.department = department
+
+manager1 = Manager("Bobby", 35, 75000, "Sales")
+
+print("Name: " + manager1.name)
+print("Age: " + str(manager1.age))
+print("Salary:" + str(manager1.salary))
+print(f"Department: {manager1.department}")
+
+'''13. Static Methods'''
+'''a. Add a static method to the Person class that returns a greeting message.'''
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+    
+    @staticmethod
+    def greets():
+        return "Hello! how are yaa."
+
+message = Person.greets()
+print(message)
+
+'''b. b. Add a static method to the MathUtils class that returns the square of a given number.'''
+class MathUtils:
+    @staticmethod
+    def square(number):
+        return number ** 2
+
+result = MathUtils.square(6)
+print(f"The square of number 6 is: {result}")
+
+'''14. Class Methods'''
+'''a. Add a class method to the Person class that returns a new instance of Person with a default name and age.'''
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+    
+    @classmethod
+    def create_default(cls):
+        return cls("defaulttt", 0)
+
+person14 = Person.create_default()
+print(f"Name: {person14.name}, Age: {person14.age}")
+
+'''b. Add a class method to the Book class that creates a new Book instance from a given title and author'''
+class Book:
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+    
+    @classmethod
+    def from_title_author(cls, title, author):
+        return cls(title, author)
+
+book1 = Book.from_title_author("Harry Potter", "J.K. Rowling")
+print(f"Title: {book1.title}, Author: {book1.author}")
+
+'''15. Magic Methods'''
+'''a. Override the __str__ method in the Person class to return a formatted string.'''
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+    
+    def __str__(self):
+        return f"Person: {self.name}, Age: {self.age}"
+
+person1 = Person("Alice", 30)
+print(person1)  
+
+'''b. Override the __add__ method in a Vector class to add two vectors together.'''
+
+class Vector:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    
+    def __add__(self, other):
+        return Vector(self.x + other.x, self.y + other.y)
+    
+    def __str__(self):
+        return f"Vector({self.x}, {self.y})"
+
+vector1 = Vector(9, 5)
+vector2 = Vector(10, 2)
+vector3 = vector1 + vector2
+print(vector3)  
+
+'''16. Context Managers'''
+'''a. Create a context manager that prints "Entering" when entering the context and "Exiting" when exiting the context.'''
+class MyContextManager:
+    def __enter__(self):
+        print("Entering")
+        return self 
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Exiting")
+        
+with MyContextManager():
+    print("Inside the context")
+
+'''b. Create a context manager that temporarily changes the current working directory and restores it back when exiting the context'''
+"""import os
+from contextlib import contextmanager
+
+@contextmanager
+def change_directory(new_dir):
+    current_dir = os.getcwd()  
+    try:
+        os.chdir(new_dir)  
+        yield 
+    finally:
+        os.chdir(current_dir):
+print("Current Directory before entering the context:", os.getcwd())
+
+with change_directory("/tmp"):
+    print("Current Directory inside the context:", os.getcwd())
+
+print("Current Directory after exiting the context:", os.getcwd())
+"""
+'''17. Iterators'''
+'''a. Create a custom iterator that returns numbers from 1 to 5.'''
+class NumberIterator:
+    def __init__(self):
+        self.current = 1
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        if self.current > 5:
+            raise StopIteration
+        else:
+            result = self.current
+            self.current += 1
+            return result
+
+numbers = NumberIterator()
+for num in numbers:
+    print(num)
+
+'''b. Create a custom iterator that returns the characters in a string one by one.'''
+class StringIterator:
+    def __init__(self, input_string):
+        self.input_string = input_string
+        self.index = 0
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        if self.index >= len(self.input_string):
+            raise StopIteration
+        else:
+            result = self.input_string[self.index]
+            self.index += 1
+            return result
+
+string = "Hello"
+chars = StringIterator(string)
+for char in chars:
+    print(char)
+
+'''18. Modules and Packages'''
+'''a. Create a simple module my_module.py with a function greet that prints "Hello, World!".Import and use this function in another script.'''
+
+def greet():
+    print("Hello, World!")
+
+from main import greet
+greet()
+
+'''b. Create a package my_package with a module utils.py that contains a function square that returns the square of a number. Import and use this function in another script.'''
+
+'''create a file my_package/utils'''
+def square(x):
+    return x ** 2
+
+from my_package.utils import square
+
+result = square(5)
+print(f"The square of 5 is: {result}")
+
+'''19. Date and Time'''
+'''a. Write a program that gets the current date and time and prints it in the format "YYYYMM-DD HH:MM".'''
+from datetime import datetime
+current_datetime = datetime.now()
+formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M")
+print("Current date and time:", formatted_datetime)
+
+'''b. Write a program that calculates the number of days between two given dates.'''
+from datetime import datetime
+def days_between_dates(date1, date2):
+
+    datetime1 = datetime.strptime(date1, "%Y-%m-%d")
+    datetime2 = datetime.strptime(date2, "%Y-%m-%d")
+
+    delta = datetime2 - datetime1
+
+    return abs(delta.days)
+
+date_str1 = "2024-07-15"
+date_str2 = "2024-07-23"
+days = days_between_dates(date_str1, date_str2)
+print(f"Number of days between {date_str1} and {date_str2}: {days}")
+
+'''20. Collections'''
+'''a. Use the collections.Counter class to count the occurrences from collections import Counter in string "abracadabra"'''
+from collections import Counter
+
+string = "abracadabra"
+char_count = Counter(string)
+
+print("Occurrences of each character:")
+for char, count in char_count.items():
+    print(f"{char}: {count}")
+
+
+'''b. Use the collections.defaultdict class to create a dictionary that returns a default value of 0 for any new keys'''
+from collections import defaultdict
+
+default_dict = defaultdict(int)
+new_key = "new_key"
+print(f"Value for {new_key}: {default_dict[new_key]}")
+
+existing_key = "existing_key"
+default_dict[existing_key] = 5
+print(f"Value for {existing_key}: {default_dict[existing_key]}")
