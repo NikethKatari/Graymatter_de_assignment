@@ -1,0 +1,364 @@
+--Introduction to sql
+
+--1. Write a query to retrieve the first 10 records from the Person.Person table.
+select top 10 *
+from Person.Person;
+
+--2. Write a query to retrieve all columns from the Production.Product table where the Color is
+--'Red'.
+select *
+from Production.Product
+where Color = 'Red';
+
+--Advanced SQL Queries
+
+--1. Create a query to list the ProductID and the average ListPrice from the Production.Product
+--table, grouped by ProductID.
+select ProductID, avg(ListPrice) 
+from Production.product
+group by ProductID
+
+--2. Create a query to list the DepartmentID and the number of employees in each department
+--from the HumanResources.EmployeeDepartmentHistory table, grouped by DepartmentID.
+select eh.DepartmentID,count(*) as NumberOfEmployees
+from [HumanResources].[EmployeeDepartmentHistory] as eh inner join [HumanResources].[Department] as ed
+on eh.DepartmentID=ed.DepartmentID
+group by eh.DepartmentID
+
+--SQL for Data Engineering
+
+--1. Write a query to join the Sales.SalesOrderHeader and Sales.SalesOrderDetail tables to get a
+--list of sales order numbers and their respective product IDs.
+select SOH.SalesOrderNumber, SOD.ProductID
+from Sales.SalesOrderHeader as SOH
+inner join Sales.SalesOrderDetail as SOD
+on SOH.SalesOrderID = SOD.SalesOrderID;
+
+--2. Write a query to join the Sales.Customer and Person.Person tables to get a list of customer
+--names and their email addresses.
+select P.FirstName, P.LastName, E.EmailAddress
+from Sales.Customer as C inner join Person.Person as P
+on C.CustomerID = P.BusinessEntityID inner join Person.EmailAddress as E
+on P.BusinessEntityID = E.BusinessEntityID;
+
+--Writing Queries for Data Manipulation and Analysis
+
+--1. Create a query to update the PhoneNumber in the Person.PersonPhone table where
+--BusinessEntityID is 5.
+update Person.PersonPhone
+set PhoneNumber = 465-555-0153
+where BusinessEntityID=5
+select * from [Person].[PersonPhone]
+
+--2. Write a query to delete records from the Sales.ShoppingCartItem table where the Quantity is 1.
+delete from [Sales].[ShoppingCartItem]
+where Quantity=1
+
+--SQL Optimization Techniques
+
+--1. Optimize the following query to improve performance:
+--Query: SELECT * FROM Sales.SalesOrderHeader WHERE OrderDate = '2022-01-01';
+create index idx on Sales.SalesOrderHeader(OrderDate);
+select SalesOrderID, OrderDate, CustomerID, TotalDue
+from Sales.SalesOrderHeader
+where OrderDate = '2022-01-01';
+
+--2. Analyze and optimize the following query:
+--Query: SELECT * FROM Production.Product WHERE ListPrice > 1000;
+create index idx_LP on Production.Product(ListPrice)
+select ProductID, Name, ListPrice, ModifiedDate
+from Production.Product
+where ListPrice > 1000;
+
+--Working with Indexes and Views
+
+--1. Create an index on the SalesOrderNumber column in the Sales.SalesOrderHeader table.
+create index idxx on [Sales].[SalesOrderHeader]([SalesOrderNumber])
+
+--2. Drop an existing index named IX_Product_Name on the Production.Product table.
+drop index [AK_Product_Name]
+on Production.Product;
+
+--Creating and Using Indexes and Views
+
+--1. Create a view that shows the ProductID, Name, and ProductNumber from the
+--Production.Product table.
+create view Pview as
+select ProductID, Name, ProductNumber
+from Production.Product;
+select * from Pview
+
+--2. Create a view that joins the Sales.SalesOrderHeader and Sales.SalesOrderDetail tables and
+--includes columns for SalesOrderID, OrderDate, and TotalDue.
+create view sales_view as
+select soh.salesorderid,soh.orderdate,soh.TotalDue
+from sales.salesorderheader as soh
+inner join sales.salesorderdetail as sod
+on soh.salesorderid = sod.salesorderid;
+
+select * from sales_view
+
+--Transactions and Concurrency Control
+
+--1. Write a transaction to transfer $500 from account A to account B ensuring ACID properties.
+begin transaction;
+
+declare @amount money =500;
+update Person.Account set amount = amount+@amount where Person_Account='A'
+update Person.Account set amount = amount-@amount where Person_name='B'
+commit transaction;
+
+--2. Write a transaction to insert a new record into the Sales.SpecialOffer table and update the
+--ModifiedDate in the Production.Product table, ensuring both operations are atomic.
+
+begin transaction;
+
+insert into Sales.SpecialOffer values ( 'record', 10, 'money','Cust',GETDATE(), DATEADD(DAY, 30, GETDATE()),15,24,'1790C4F5-191F-4337-AB6B-0A2DDE03CBF9', '2011-04-01 00:00:00.000')
+
+update production.product
+set modifieddate = getdate() 
+
+commit transaction;
+
+--3. Explain what happens when two transactions try to update the same record simultaneously
+--and how SQL Server handles it.
+When two transactions try to update the same record simultaneously:
+
+SQL Server manages concurrency using isolation levels and locking mechanisms.
+Transactions are managed to ensure consistency and isolation.
+Lock conflicts may cause one transaction to wait or fail if another transaction holds a conflicting lock.
+Deadlocks are detected and resolved automatically by SQL Server to ensure that transactions can continue without getting stuck.
+
+--Stored Procedures
+--1. Create a stored procedure to insert a new product into the Production.Product table.
+create procedure dbo.InsertCurr
+ @CurrencyCode CHAR(3),
+ @Name NVARCHAR(50),
+ @ModifiedDate DATETIME
+as
+begin
+ insert into Sales.Currency (CurrencyCode, Name, ModifiedDate)
+ values (@CurrencyCode, @Name, @ModifiedDate);
+end;
+exec dbo.InsertCurr
+ @CurrencyCode = 'AUS',
+ @Name = 'Aussy',
+ @ModifiedDate = GETDATE();
+
+--2. Create a stored procedure to update the StandardCost of a product in the Production.Product
+--table based on the ProductID and a new cost parameter.
+create procedure dbo.UpdateCur
+ @CurrencyCode CHAR(3),
+ @NewName NVARCHAR(50),
+ @NewModifiedDate DATETIME
+as
+begin
+ update Sales.Currency
+ set Name = @NewName,
+ ModifiedDate = @NewModifiedDate
+ where CurrencyCode = @CurrencyCode;
+end;
+
+exec dbo.UpdateCur
+ @CurrencyCode = 'EUR',
+ @NewName = 'Europe',
+ @NewModifiedDate = GETDATE();
+
+ --Writing Triggers
+
+--1. Write a trigger that updates the ModifiedDate column in the Production.Product table
+--whenever a record is updated.
+create trigger trgCurr
+on Sales.Currency
+after update
+as
+begin
+ update Sales.Currency
+ set Name = i.Name
+ from inserted i
+ where Sales.Currency.CurrencyCode = i.CurrencyCode;
+end;--2. Write a trigger to log changes to the ListPrice in the Production.Product table into a new table
+--called ProductPriceHistory.
+CREATE TABLE Production.ProductPriceHistory
+(
+    HistoryID INT IDENTITY(1,1) PRIMARY KEY,
+    ProductID INT,
+    OldListPrice DECIMAL(19, 4),
+    NewListPrice DECIMAL(19, 4),
+    ChangeDate DATETIME DEFAULT GETDATE(), 
+);
+
+create trigger trg_LogPriceChange
+on production.product
+for update
+as
+begin
+    if update(listprice)
+    begin
+        insert into production.productpricehistory (productid, oldlistprice, newlistprice, changedate)
+        select 
+            i.productid, 
+            d.listprice as oldlistprice, 
+            i.listprice as newlistprice, 
+            getdate() as changedate
+        from 
+            inserted i
+        inner join 
+            deleted d
+        on 
+            i.productid = d.productid
+        where 
+            i.listprice <> d.listprice;
+    end
+end;
+
+
+--Slowly Changing Dimensions (SCD) and Change Data Capture (CDC)
+
+--1. Describe a scenario in the Adventure Works database where a Slowly Changing Dimension
+--(SCD) Type 2 would be appropriate.
+A customer in the AdventureWorks database might change their address over time. For instance,
+if a customer relocates from one address to another, you need to keep track of these changes 
+to maintain historical accuracy. SCD Type 2 ensures that historical data is not lost and provides
+a complete view of changes over time.
+
+--ETL (Extract, Transform, Load)
+
+--1. Outline the steps to extract data from the Sales.SalesOrderHeader table, transform it to
+--aggregate sales by year, and load it into a new table called YearlySales.
+create table sales.yearlysales (
+    year int primary key,
+    total_sales decimal(19, 4)
+);
+insert into sales.yearlysales (year, total_sales)
+select
+    year(orderdate) as year,
+    sum(totaldue) as total_sales
+from
+    sales.salesorderheader
+group by
+    year(orderdate);
+create procedure dbo.LoadYearlySales
+as
+begin
+    truncate table sales.yearlysales;
+
+    insert into sales.yearlysales (year, total_sales)
+    select
+        year(orderdate) as year,
+        sum(totaldue) as total_sales
+    from
+        sales.salesorderheader
+    group by
+        year(orderdate);
+end;
+exec dbo.LoadYearlySales;
+
+--2. Describe the ETL process and its importance in data warehousing, using examples from the
+--Adventure Works database.
+The ETL process — Extract, Transform, and Load is a critical component of data warehousing.
+It involves extracting data from various sources, transforming it into a suitable format 
+for analysis, and loading it into a data warehouse for reporting and analysis. 
+1. Extracting sales data from the Sales.SalesOrderHeader and Sales.SalesOrderDetail tables.
+2. Standardizing date formats and correcting any inconsistencies in the extracted sales data. 
+For instance, ensuring that OrderDate in Sales.SalesOrderHeader is uniformly formatted.
+3. Loading the aggregated sales data into a YearlySales table within the data warehouse. 
+This table will store yearly totals, making it easier to generate reports and perform historical analysis.
+
+
+--3. Write a SQL script to extract data from the Sales.Customer table, transform it to calculate the
+--TotalSpend for each customer, and load it into a new table called CustomerSpend.
+
+create table sales.customerspend (
+    customerid int primary key,
+    totalspend decimal(19, 4)
+);
+
+insert into sales.customerspend (customerid, totalspend)
+select
+    c.customerid,
+    sum(soh.totaldue) as totalspend
+from
+    sales.customer c
+join
+    sales.salesorderheader soh
+on
+    c.customerid = soh.customerid
+group by
+    c.customerid;
+select * from Sales.customerspend
+
+--4. Write a query to extract data from the Production.Product table, transform it by adding a 10%
+--markup to the ListPrice, and insert it into a new table called ProductWithMarkup.create table production.productwithmarkup (
+    productid int primary key,
+    name nvarchar(255),
+    listprice decimal(19, 4),
+    markupprice decimal(19, 4)
+);
+
+insert into production.productwithmarkup (productid, name, listprice, markupprice)
+select
+    productid,
+    name,
+    listprice,
+    listprice * 1.10 as markupprice
+from
+    production.product;
+select * from  production.productwithmarkup
+
+--Reporting and Data Visualization
+
+--1. Write a query to generate a report showing the total sales amount by TerritoryID from the
+--Sales.SalesOrderHeader table.
+-- Query to generate the total sales amount by TerritoryID
+select
+    territoryid,
+    sum(totaldue) as total_sales_amount
+from
+    sales.salesorderheader
+group by
+    territoryid
+order by
+    territoryid;
+
+--2. Create a simple report that lists the top 5 products by sales amount using data from the
+--Sales.SalesOrderDetail table.
+select top 5
+ p.Name AS ProductName,
+ SUM(od.LineTotal) AS TotalSalesAmount
+from
+ Sales.SalesOrderDetail od
+inner join
+ Production.Product p ON od.ProductID = p.ProductID
+group by
+ p.Name
+order by
+ TotalSalesAmount desc;
+
+--3. Describe how to connect Power BI to the Adventure Works database and load data from the
+--Sales.SalesOrderHeader and Sales.SalesOrderDetail tables.
+Connect: Use Power BI Desktop to connect to the AdventureWorks database via SQL Server.
+Select and Load: Choose the Sales.SalesOrderHeader and Sales.SalesOrderDetail tables, and load them into Power BI.
+Transform (Optional): Apply any necessary data transformations using the Power Query Editor.
+Visualize: Build reports and visualizations based on the loaded data.
+By following these steps, you can effectively connect Power BI to the AdventureWorks database 
+and analyze data from the Sales.SalesOrderHeader and Sales.SalesOrderDetail tables.
+
+--4. Create a Power BI report that visualizes the total sales by TerritoryID and includes a slicer for
+--filtering by OrderDate.
+select
+ TerritoryID,
+ sum(TotalDue) as TotalSalesAmount
+from
+ Sales.SalesOrderHeader
+where
+ OrderDate BETWEEN '2011-01-01' AND '2011-12-31'
+group by
+ TerritoryID
+order by
+ TotalSalesAmount DESC;
+
+ 
+
+
+ 
