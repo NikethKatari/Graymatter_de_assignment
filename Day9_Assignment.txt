@@ -1,0 +1,965 @@
+'''11.  Unit Testing:'''
+'''a.Write unit tests for a function that calculates the factorial of a number. Use the 
+unittest framework.'''
+def factorial(n):
+    if n < 0:
+        raise ValueError("Factorial is not defined for negative numbers.")
+    elif n == 0 or n == 1:
+        return 1
+    else:
+        result = 1
+        for i in range(2, n + 1):
+            result *= i
+        return result
+import unittest
+
+class TestFactorial(unittest.TestCase):
+    def test_factorial_zero(self):
+        self.assertEqual(factorial(0), 1)
+    def test_factorial_one(self):
+        self.assertEqual(factorial(1), 1)
+    def test_factorial_positive(self):
+        self.assertEqual(factorial(5), 120)
+        self.assertEqual(factorial(3), 6)
+        self.assertEqual(factorial(10), 3628800)
+    def test_factorial_negative(self):
+        with self.assertRaises(ValueError):
+            factorial(-1)
+    def test_factorial_large(self):
+        self.assertEqual(factorial(20), 2432902008176640000)
+if __name__ == '__main__':
+    unittest.main()
+
+'''b.Write unit tests for a function that checks if a given string is a palindrome.'''
+def is_palindrome(s):
+    s = ''.join(c.lower() for c in s if c.isalnum())  # Normalize the string
+    return s == s[::-1]
+
+class TestIsPalindrome(unittest.TestCase):
+    
+    def test_empty_string(self):
+        self.assertTrue(is_palindrome(""))
+    def test_single_character(self):
+        self.assertTrue(is_palindrome("a"))
+        self.assertTrue(is_palindrome("Z"))
+    def test_simple_palindrome(self):
+        self.assertTrue(is_palindrome("madam"))
+        self.assertTrue(is_palindrome("racecar"))
+    def test_case_insensitive_palindrome(self):
+        self.assertTrue(is_palindrome("Madam"))
+        self.assertTrue(is_palindrome("RaceCar"))
+    def test_palindrome_with_non_alphanumeric(self):
+        self.assertTrue(is_palindrome("A man, a plan, a canal, Panama"))
+        self.assertTrue(is_palindrome("No 'x' in Nixon"))
+    def test_non_palindrome(self):
+        self.assertFalse(is_palindrome("hello"))
+        self.assertFalse(is_palindrome("world"))
+
+if __name__ == "__main__":
+    unittest.main()
+
+'''12. Decorators:'''
+'''a.Create a decorator that logs the execution time of a function. Apply it to a 
+function that sorts a large list.'''
+'''b.Create a decorator that retries a function up to 3 times if it raises an exception, 
+with a delay between retries.'''
+
+import time
+import functools
+import random
+
+# Decorator for logging execution time
+def log_execution_time(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Executed {func.__name__} in {execution_time:.4f} seconds")
+        return result
+    return wrapper
+
+# Function to sort a large list
+@log_execution_time
+def sort_large_list(lst):
+    return sorted(lst)
+def retry_on_exception(max_retries=3, delay=1):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            retries = 0
+            while retries < max_retries:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    retries += 1
+                    print(f"Exception: {e}. Retrying {retries}/{max_retries}...")
+                    time.sleep(delay)
+            raise Exception(f"Failed after {max_retries} retries")
+        return wrapper
+    return decorator
+@retry_on_exception(max_retries=3, delay=2)
+def unreliable_function():
+    if random.random() < 0.5:  # 50% chance to raise an exception
+        raise ValueError("Random failure occurred")
+    return "Success"
+# Example usage
+large_list = list(range(100, 0, -1))
+sorted_list = sort_large_list(large_list)
+print(sorted_list)
+try:
+    result = unreliable_function()
+    print(result)
+except Exception as e:
+    print(e)
+'''13.. Concurrency with Threads:'''
+'''a.Write a program that uses threading to calculate the sum of a large list of 
+numbers by dividing the work among multiple threads.'''
+import threading
+
+def partial_sum(numbers, start, end, result, index):
+    result[index] = sum(numbers[start:end])
+def calculate_sum(numbers, num_threads):
+    
+    length = len(numbers)
+    segment_size = length // num_threads
+    threads = []
+    result = [0] * num_threads
+    for i in range(num_threads):
+        start = i * segment_size
+        end = (i + 1) * segment_size if i != num_threads - 1 else length
+        thread = threading.Thread(target=partial_sum, args=(numbers, start, end, result, i))
+        threads.append(thread)
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    return sum(result)
+if __name__ == "__main__":
+    large_list = list(range(1, 10000001))  
+    num_threads = 4 
+    total_sum = calculate_sum(large_list, num_threads)
+    print("Total sum:", total_sum)
+'''b.Write a program that uses threading to fetch data from multiple URLs 
+concurrently and print the status code of each response.'''
+pip install requests
+
+import threading
+import requests
+
+def fetch_url(url, results, index):
+    try:
+        response = requests.get(url)
+        results[index] = (url, response.status_code)
+    except requests.RequestException as e:
+        results[index] = (url, None, str(e))
+
+def fetch_data_from_urls(urls):
+    num_urls = len(urls)
+    threads = []
+    results = [None] * num_urls
+    for i in range(num_urls):
+        thread = threading.Thread(target=fetch_url, args=(urls[i], results, i))
+        threads.append(thread)
+        thread.start()
+    for thread in threads:
+        thread.join()
+    for result in results:
+        if result[1] is not None:
+            print(f"URL: {result[0]}, Status Code: {result[1]}")
+        else:
+            print(f"URL: {result[0]}, Error: {result[2]}")
+
+if __name__ == "__main__":
+    urls = [
+        "https://www.example.com",
+        "https://www.google.com",
+        "https://www.nonexistentwebsite123456.com",  
+        "https://www.github.com"
+    ]
+    fetch_data_from_urls(urls)
+
+'''14. Data Pipeline Simulation:'''
+'''a.Simulate a data pipeline that processes a list of dictionaries, applying various 
+transformations, and outputs the processed data as a list of dictionaries.'''
+def add_new_field(data, field_name, default_value):
+    for record in data:
+        record[field_name] = default_value
+    return data
+def normalize_field(data, field_name):
+    values = [record[field_name] for record in data]
+    min_value = min(values)
+    max_value = max(values)
+    range_value = max_value - min_value
+    for record in data:
+        record[field_name] = (record[field_name] - min_value) / range_value
+    return data
+def convert_field_to_uppercase(data, field_name):
+    for record in data:
+        if field_name in record:
+            record[field_name] = record[field_name].upper()
+    return data
+def filter_records(data, field_name, threshold):
+    return [record for record in data if record.get(field_name, 0) > threshold]
+def process_data_pipeline(data, transformations):
+    for transformation in transformations:
+        data = transformation(data)
+    return data
+# Example usage
+data = [
+    {'name': 'Alice', 'age': 25, 'score': 85},
+    {'name': 'Bob', 'age': 30, 'score': 90},
+    {'name': 'Charlie', 'age': 35, 'score': 75},
+    {'name': 'David', 'age': 40, 'score': 60}
+]
+transformations = [
+    lambda data: add_new_field(data, 'status', 'active'),
+    lambda data: normalize_field(data, 'score'),
+    lambda data: convert_field_to_uppercase(data, 'name'),
+    lambda data: filter_records(data, 'age', 30)
+]
+processed_data = process_data_pipeline(data, transformations)
+print("Processed Data:")
+for record in processed_data:
+    print(record)
+
+'''Extend the pipeline to include an error-handling stage that logs any errors 
+encountered during processing'''
+import logging
+logging.basicConfig(filename='pipeline_errors.log', level=logging.ERROR)
+def log_error(function_name, error):
+    logging.error(f"Error in function {function_name}: {error}")
+def add_new_field(data, field_name, default_value):
+    try:
+        for record in data:
+            record[field_name] = default_value
+    except Exception as e:
+        log_error('add_new_field', e)
+    return data
+def normalize_field(data, field_name):
+    try:
+        values = [record[field_name] for record in data]
+        min_value = min(values)
+        max_value = max(values)
+        range_value = max_value - min_value
+        for record in data:
+            record[field_name] = (record[field_name] - min_value) / range_value
+    except Exception as e:
+        log_error('normalize_field', e)
+    return data
+def convert_field_to_uppercase(data, field_name):
+    try:
+        for record in data:
+            if field_name in record:
+                record[field_name] = record[field_name].upper()
+    except Exception as e:
+        log_error('convert_field_to_uppercase', e)
+    return data
+def filter_records(data, field_name, threshold):
+    try:
+        return [record for record in data if record.get(field_name, 0) > threshold]
+    except Exception as e:
+        log_error('filter_records', e)
+        return data  # Return the original data if an error occurs
+def process_data_pipeline(data, transformations):
+    for transformation in transformations:
+        try:
+            data = transformation(data)
+        except Exception as e:
+            log_error('process_data_pipeline', e)
+    return data
+# Example usage
+data = [
+    {'name': 'Alice', 'age': 25, 'score': 85},
+    {'name': 'Bob', 'age': 30, 'score': 90},
+    {'name': 'Charlie', 'age': 35, 'score': 75},
+    {'name': 'David', 'age': 40, 'score': 60}
+]
+transformations = [
+    lambda data: add_new_field(data, 'status', 'active'),
+    lambda data: normalize_field(data, 'score'),
+    lambda data: convert_field_to_uppercase(data, 'name'),
+    lambda data: filter_records(data, 'age', 30)
+]
+processed_data = process_data_pipeline(data, transformations)
+print("Processed Data:")
+for record in processed_data:
+    print(record)
+
+'''15. Conϐiguration Management:'''
+'''a.Write a Python script that reads conϐiguration settings from a dictionary and 
+uses them to perform a speciϐic task.'''
+config = {
+    "smtp_server": "smtp.example.com",
+    "smtp_port": 587,
+    "username": "user@example.com",
+    "password": "password",
+    "from_email": "user@example.com",
+    "to_email": "recipient@example.com",
+    "subject": "Test Email",
+    "body": "This is a test email sent from Python."
+}
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def send_email(config):
+    try:
+        # Extract settings from the configuration dictionary
+        smtp_server = config["smtp_server"]
+        smtp_port = config["smtp_port"]
+        username = config["username"]
+        password = config["password"]
+        from_email = config["from_email"]
+        to_email = config["to_email"]
+        subject = config["subject"]
+        body = config["body"]
+
+        # Create the email message
+        msg = MIMEMultipart()
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+
+        # Connect to the SMTP server and send the email
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
+            server.login(username, password)
+            server.send_message(msg)
+
+        print("Email sent successfully!")
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    # Configuration dictionary
+    config = {
+        "smtp_server": "smtp.example.com",
+        "smtp_port": 587,
+        "username": "user@example.com",
+        "password": "password",
+        "from_email": "user@example.com",
+        "to_email": "recipient@example.com",
+        "subject": "Test Email",
+        "body": "This is a test email sent from Python."
+    }
+    send_email(config)
+'''b.Write a function that validates the conϐiguration settings, ensuring that all 
+required ϐields are present and have valid values.'''
+import re
+
+def validate_config(config):
+    required_fields = {
+        "smtp_server": str,
+        "smtp_port": int,
+        "username": str,
+        "password": str,
+        "from_email": str,
+        "to_email": str,
+        "subject": str,
+        "body": str
+    }
+    for field, expected_type in required_fields.items():
+        if field not in config:
+            return False, f"Missing required field: {field}"
+        if not isinstance(config[field], expected_type):
+            return False, f"Field '{field}' must be of type {expected_type.__name__}"
+    if not (1 <= config["smtp_port"] <= 65535):
+        return False, "SMTP port must be between 1 and 65535"
+    email_pattern = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
+    if not email_pattern.match(config["from_email"]):
+        return False, "Invalid 'from_email' address format"
+    if not email_pattern.match(config["to_email"]):
+        return False, "Invalid 'to_email' address format"
+
+    return True, "Configuration is valid"
+
+if __name__ == "__main__":
+    config = {
+        "smtp_server": "smtp.example.com",
+        "smtp_port": 587,
+        "username": "user@example.com",
+        "password": "password",
+        "from_email": "user@example.com",
+        "to_email": "recipient@example.com",
+        "subject": "Test Email",
+        "body": "This is a test email sent from Python."
+    }
+    is_valid, message = validate_config(config)
+    if is_valid:
+        print("Configuration is valid.")
+    else:
+        print(f"Configuration is invalid: {message}")
+'''16. Handling Large Data Sets:'''
+'''a.Write a function that processes a large list of numbers in chunks and calculates 
+the average value of the list.'''
+def calculate_average_large_list(numbers, chunk_size=10000):
+    total_sum = 0
+    total_count = 0
+    iterator = iter(numbers)
+    while True:
+        # Get the next chunk
+        chunk = list(itertools.islice(iterator, chunk_size))
+        if not chunk:
+            break
+        chunk_sum = sum(chunk)
+        chunk_count = len(chunk)
+        total_sum += chunk_sum
+        total_count += chunk_count
+    if total_count == 0:
+        return 0
+    return total_sum / total_count
+numbers = range(1, 1000000) 
+average = calculate_average_large_list(numbers)
+print(f"The average is {average}")
+
+'''b.Write a function that processes a large list of strings in chunks, counts the 
+frequency of each string, and returns a dictionary with the results.'''
+from collections import defaultdict
+import itertools
+
+def count_frequencies_large_list(strings, chunk_size=10000):
+    frequency_dict = defaultdict(int)
+    iterator = iter(strings)
+    while True:
+        chunk = list(itertools.islice(iterator, chunk_size))
+        if not chunk:
+            break
+        for string in chunk:
+            frequency_dict[string] += 1
+    return dict(frequency_dict)
+strings = ["apple", "banana", "apple", "orange", "banana", "banana"] * 100000 
+frequency = count_frequencies_large_list(strings)
+print(frequency)
+
+'''17.Class and Objects:'''
+'''a.Create a class representing a bank account with methods to deposit, withdraw, 
+and check balance. Ensure proper error handling for invalid operations.
+b.Extend the bank account class to support multiple currencies, with methods to 
+convert between currencies using a given exchange rate.'''
+class BankAccount:
+    def __init__(self, initial_balance=0):
+        if initial_balance < 0:
+            raise ValueError("Initial balance cannot be negative.")
+        self.balance = initial_balance
+
+    def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("Deposit amount must be positive.")
+        self.balance += amount
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive.")
+        if amount > self.balance:
+            raise ValueError("Insufficient funds.")
+        self.balance -= amount
+
+    def check_balance(self):
+        return self.balance
+
+# Example usage:
+account = BankAccount(100)
+account.deposit(50)
+print(account.check_balance())  # Output: 150
+account.withdraw(30)
+print(account.check_balance())  # Output: 120
+
+class CurrencyBankAccount:
+    def __init__(self, initial_balance=0, currency='USD'):
+        if initial_balance < 0:
+            raise ValueError("Initial balance cannot be negative.")
+        self.balance = initial_balance
+        self.currency = currency
+        self.exchange_rates = {}  # Dictionary to hold exchange rates
+
+    def set_exchange_rate(self, from_currency, to_currency, rate):
+        if rate <= 0:
+            raise ValueError("Exchange rate must be positive.")
+        self.exchange_rates[(from_currency, to_currency)] = rate
+
+    def convert_currency(self, amount, from_currency, to_currency):
+        if from_currency == to_currency:
+            return amount
+        if (from_currency, to_currency) not in self.exchange_rates:
+            raise ValueError("Exchange rate not set.")
+        return amount * self.exchange_rates[(from_currency, to_currency)]
+
+    def deposit(self, amount, currency):
+        if amount <= 0:
+            raise ValueError("Deposit amount must be positive.")
+        if currency != self.currency:
+            amount = self.convert_currency(amount, currency, self.currency)
+        self.balance += amount
+
+    def withdraw(self, amount, currency):
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive.")
+        if currency != self.currency:
+            amount = self.convert_currency(amount, currency, self.currency)
+        if amount > self.balance:
+            raise ValueError("Insufficient funds.")
+        self.balance -= amount
+
+    def check_balance(self):
+        return self.balance
+
+# Example usage:
+account = CurrencyBankAccount(100, 'USD')
+account.set_exchange_rate('USD', 'EUR', 0.85)
+account.set_exchange_rate('EUR', 'USD', 1.18)
+account.deposit(50, 'EUR')
+print(account.check_balance())  # Output: 100 + (50 * 1.18) = 159.0
+account.withdraw(30, 'USD')
+print(account.check_balance())  # Output: 159.0 - 30 = 129.0
+
+'''18.Regular Expressions:'''
+'''a.Write a function that validates email addresses using regular expressions.'''
+'''b.Write a function that extracts all the dates from a given text string in the format 
+(DD-MM-YYYY).'''
+import re
+
+def validate_email(email):
+    # Regular expression for validating an Email
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if re.match(pattern, email):
+        return True
+    return False
+
+# Example usage:
+print(validate_email('example@example.com'))  # Output: True
+print(validate_email('invalid-email@com'))    # Output: False
+
+import re
+
+def extract_dates(text):
+    # Regular expression for matching dates in DD-MM-YYYY format
+    pattern = r'\b(\d{2}-\d{2}-\d{4})\b'
+    return re.findall(pattern, text)
+
+# Example usage:
+text = "The event is on 15-08-2024 and the deadline is 31-12-2024."
+dates = extract_dates(text)
+print(dates)  # Output: ['15-08-2024', '31-12-2024']
+
+'''19'''
+from cryptography.fernet import Fernet
+
+def generate_key():
+    """Generate a new Fernet key."""
+    return Fernet.generate_key()
+
+def encrypt_text(key, text):
+    """Encrypt the given text using the provided key."""
+    fernet = Fernet(key)
+    encrypted_text = fernet.encrypt(text.encode())
+    return encrypted_text
+
+def decrypt_text(key, encrypted_text):
+    """Decrypt the given encrypted text using the provided key."""
+    fernet = Fernet(key)
+    decrypted_text = fernet.decrypt(encrypted_text).decode()
+    return decrypted_text
+
+if __name__ == "__main__":
+    key = generate_key()
+    print(f"Encryption Key: {key.decode()}")
+
+    text = "This is a secret message."
+    print(f"Original Text: {text}")
+
+    encrypted = encrypt_text(key, text)
+    print(f"Encrypted Text: {encrypted.decode()}")
+
+    decrypted = decrypt_text(key, encrypted)
+    print(f"Decrypted Text: {decrypted}")
+from cryptography.fernet import Fernet
+import json
+
+def generate_key():
+    """Generate a new Fernet key."""
+    return Fernet.generate_key()
+
+def encrypt_text(key, text):
+    """Encrypt the given text using the provided key."""
+    fernet = Fernet(key)
+    encrypted_text = fernet.encrypt(text.encode())
+    return encrypted_text
+
+def decrypt_text(key, encrypted_text):
+    """Decrypt the given encrypted text using the provided key."""
+    fernet = Fernet(key)
+    decrypted_text = fernet.decrypt(encrypted_text).decode()
+    return decrypted_text
+
+def encrypt_dict(key, data):
+    """Encrypt all string values in a dictionary, preserving its structure."""
+    encrypted_data = {}
+    for k, v in data.items():
+        if isinstance(v, dict):
+            encrypted_data[k] = encrypt_dict(key, v)
+        elif isinstance(v, str):
+            encrypted_data[k] = encrypt_text(key, v)
+        else:
+            encrypted_data[k] = v
+    return encrypted_data
+
+def decrypt_dict(key, data):
+    """Decrypt all string values in a dictionary, preserving its structure."""
+    decrypted_data = {}
+    for k, v in data.items():
+        if isinstance(v, dict):
+            decrypted_data[k] = decrypt_dict(key, v)
+        elif isinstance(v, bytes):
+            decrypted_data[k] = decrypt_text(key, v)
+        else:
+            decrypted_data[k] = v
+    return decrypted_data
+
+if __name__ == "__main__":
+    key = generate_key()
+    print(f"Encryption Key: {key.decode()}")
+
+    sensitive_data = {
+        "username": "user123",
+        "password": "securepassword",
+        "details": {
+            "email": "user123@example.com",
+            "phone": "123-456-7890"
+        }
+    }
+
+    print(f"Original Data: {json.dumps(sensitive_data, indent=4)}")
+
+    encrypted_data = encrypt_dict(key, sensitive_data)
+    print(f"Encrypted Data: {json.dumps(encrypted_data, indent=4)}")
+
+    decrypted_data = decrypt_dict(key, encrypted_data)
+    print(f"Decrypted Data: {json.dumps(decrypted_data, indent=4)}")
+
+'''20'''
+import psutil
+import time
+import os
+
+def monitor_memory(pid, interval=1):
+    """Monitor and log memory usage of the process with the given PID."""
+    try:
+        process = psutil.Process(pid)
+        while True:
+            mem_info = process.memory_info()
+            print(f"Memory Usage: {mem_info.rss / 1024 / 1024:.2f} MB")
+            time.sleep(interval)
+    except psutil.NoSuchProcess:
+        print(f"No process found with PID: {pid}")
+
+if __name__ == "__main__":
+    pid = os.getpid()  # Get current process ID
+    monitor_memory(pid, interval=2)
+
+import random
+from memory_profiler import profile
+
+@profile
+def generate_large_list(size):
+    """Generate a large list of random numbers."""
+    large_list = [random.randint(1, 100) for _ in range(size)]
+    return large_list
+
+if __name__ == "__main__":
+    generate_large_list(10**6)  # Adjust the size as needed
+
+'''21'''
+import multiprocessing
+
+def is_prime(num):
+    """Check if a number is prime."""
+    if num <= 1:
+        return False
+    if num <= 3:
+        return True
+    if num % 2 == 0 or num % 3 == 0:
+        return False
+    i = 5
+    while i * i <= num:
+        if num % i == 0 or num % (i + 2) == 0:
+            return False
+        i += 6
+    return True
+
+def calculate_primes(start, end, result_queue):
+    """Calculate prime numbers in a range and put them in a result queue."""
+    primes = [num for num in range(start, end) if is_prime(num)]
+    result_queue.put(primes)
+
+def parallel_prime_calculation(start, end, num_processes):
+    """Parallelize the prime number calculation across multiple processes."""
+    chunk_size = (end - start) // num_processes
+    processes = []
+    result_queue = multiprocessing.Queue()
+
+    for i in range(num_processes):
+        chunk_start = start + i * chunk_size
+        chunk_end = start + (i + 1) * chunk_size if i < num_processes - 1 else end
+        process = multiprocessing.Process(target=calculate_primes, args=(chunk_start, chunk_end, result_queue))
+        processes.append(process)
+        process.start()
+
+    for process in processes:
+        process.join()
+
+    primes = []
+    while not result_queue.empty():
+        primes.extend(result_queue.get())
+
+    return sorted(primes)
+
+if __name__ == "__main__":
+    start = 1
+    end = 100000
+    num_processes = multiprocessing.cpu_count()
+    primes = parallel_prime_calculation(start, end, num_processes)
+    print(f"Number of primes found: {len(primes)}")
+
+import multiprocessing
+import numpy as np
+
+def matrix_multiply_chunk(A, B, result, row_start, row_end):
+    """Multiply a chunk of rows from matrix A with matrix B and store in the result matrix."""
+    for i in range(row_start, row_end):
+        for j in range(B.shape[1]):
+            result[i, j] = sum(A[i, k] * B[k, j] for k in range(A.shape[1]))
+
+def parallel_matrix_multiplication(A, B, num_processes):
+    """Perform matrix multiplication in parallel using multiple processes."""
+    result = np.zeros((A.shape[0], B.shape[1]), dtype=int)
+    chunk_size = A.shape[0] // num_processes
+    processes = []
+
+    for i in range(num_processes):
+        row_start = i * chunk_size
+        row_end = (i + 1) * chunk_size if i < num_processes - 1 else A.shape[0]
+        process = multiprocessing.Process(target=matrix_multiply_chunk, args=(A, B, result, row_start, row_end))
+        processes.append(process)
+        process.start()
+
+    for process in processes:
+        process.join()
+
+    return result
+
+if __name__ == "__main__":
+    # Example matrices
+    A = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    B = np.array([[9, 8, 7], [6, 5, 4], [3, 2, 1]])
+    num_processes = multiprocessing.cpu_count()
+    
+    result = parallel_matrix_multiplication(A, B, num_processes)
+    print("Matrix A:")
+    print(A)
+    print("Matrix B:")
+    print(B)
+    print("Result of A x B:")
+    print(result)
+
+'''22'''
+class DivisionByZeroError(Exception):
+    """Exception raised for errors in the division by zero."""
+    def __init__(self, message="Cannot divide by zero"):
+        self.message = message
+        super().__init__(self.message)
+
+class NegativeNumberError(Exception):
+    """Exception raised for errors in operations with negative numbers."""
+    def __init__(self, message="Negative number encountered"):
+        self.message = message
+        super().__init__(self.message)
+
+def divide_numbers(numerator, denominator):
+    """Divide two numbers and handle custom exceptions."""
+    try:
+        if denominator == 0:
+            raise DivisionByZeroError()
+        if numerator < 0 or denominator < 0:
+            raise NegativeNumberError()
+        result = numerator / denominator
+        return result
+    except DivisionByZeroError as e:
+        print(f"Error: {e}")
+    except NegativeNumberError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+if __name__ == "__main__":
+    # Test cases
+    print(divide_numbers(10, 2))  # Should work fine
+    print(divide_numbers(10, 0))  # Should raise DivisionByZeroError
+    print(divide_numbers(-10, 2))  # Should raise NegativeNumberError
+from contextlib import contextmanager
+
+@contextmanager
+def database_connection():
+    """Context manager for handling a mock database connection."""
+    connection = None
+    try:
+        # Simulate opening a database connection
+        connection = "Database Connection Established"
+        print(connection)
+        yield connection  # Provide the resource to the caller
+    except Exception as e:
+        print(f"Error during database operation: {e}")
+        raise  # Re-raise the exception to be handled outside if needed
+    finally:
+        if connection:
+            # Simulate closing the database connection
+            print("Database Connection Closed")
+
+def perform_database_operation():
+    """Function to perform a database operation using the context manager."""
+    try:
+        with database_connection() as conn:
+            # Simulate a database operation
+            print("Performing database operation...")
+            # Simulate an error during operation
+            raise ValueError("Simulated database error")
+    except ValueError as e:
+        print(f"Handled ValueError: {e}")
+
+if __name__ == "__main__":
+    perform_database_operation()
+
+'''23'''
+def fibonacci(n):
+    if n <= 0:
+        raise ValueError("n must be a positive integer")
+    elif n == 1:
+        return 0
+    elif n == 2:
+        return 1
+    else:
+        return fibonacci(n - 1) + fibonacci(n - 2)
+
+print(fibonacci(10))  
+
+def tower_of_hanoi(n, source, auxiliary, target):
+    if n <= 0:
+        raise ValueError("n must be a positive integer")
+    if n == 1:
+        print(f"Move disk 1 from {source} to {target}")
+    else:
+        tower_of_hanoi(n - 1, source, target, auxiliary)
+        print(f"Move disk {n} from {source} to {target}")
+        tower_of_hanoi(n - 1, auxiliary, source, target)
+
+tower_of_hanoi(3, 'A', 'B', 'C')
+'''24'''
+def merge_dict_lists(list1, list2, key):
+    merged_dict = {}
+    # Add dictionaries from the first list
+    for d in list1:
+        merged_dict[d[key]] = d
+    
+    # Update with dictionaries from the second list
+    for d in list2:
+        if d[key] in merged_dict:
+            merged_dict[d[key]].update(d)
+        else:
+            merged_dict[d[key]] = d
+
+    return list(merged_dict.values())
+
+# Example usage
+list1 = [
+    {'id': 1, 'name': 'Alice', 'age': 30},
+    {'id': 2, 'name': 'Bob', 'age': 25}
+]
+
+list2 = [
+    {'id': 1, 'city': 'New York'},
+    {'id': 3, 'name': 'Charlie', 'city': 'Los Angeles'}
+]
+
+merged_list = merge_dict_lists(list1, list2, 'id')
+print(merged_list)
+
+import pandas as pd
+
+def merge_dataframes(dfs, key):
+    # Start with the first DataFrame
+    merged_df = dfs[0]
+
+    # Merge each DataFrame in the list
+    for df in dfs[1:]:
+        merged_df = pd.merge(merged_df, df, on=key, how='outer', suffixes=('', '_new'))
+        
+        # Resolve conflicts by keeping the most recent data
+        for column in df.columns:
+            if column != key:
+                if column + '_new' in merged_df.columns:
+                    merged_df[column] = merged_df.apply(lambda row: row[column + '_new'] if pd.notnull(row[column + '_new']) else row[column], axis=1)
+                    merged_df.drop(column + '_new', axis=1, inplace=True)
+
+    return merged_df
+
+# Example usage
+df1 = pd.DataFrame({
+    'id': [1, 2],
+    'name': ['Alice', 'Bob'],
+    'age': [30, 25]
+})
+
+df2 = pd.DataFrame({
+    'id': [1, 3],
+    'city': ['New York', 'Los Angeles'],
+    'age': [35, 40]  # New data for id 1, new entry for id 3
+})
+
+df3 = pd.DataFrame({
+    'id': [2, 3],
+    'age': [26, 41],  # New data for id 2 and id 3
+    'country': ['USA', 'USA']
+})
+
+dataframes = [df1, df2, df3]
+merged_df = merge_dataframes(dataframes, 'id')
+print(merged_df)
+
+'''25'''
+from statistics import mean, median, mode, StatisticsError
+
+def calculate_mean_median_mode(numbers):
+    if not numbers:
+        raise ValueError("The list is empty")
+    
+    mean_value = mean(numbers)
+    median_value = median(numbers)
+    
+    try:
+        mode_value = mode(numbers)
+    except StatisticsError:
+        mode_value = None  # No unique mode in the list
+    
+    return mean_value, median_value, mode_value
+
+from statistics import stdev, variance
+
+def calculate_standard_deviation_variance(numbers):
+    if len(numbers) < 2:
+        raise ValueError("At least two numbers are required")
+    
+    stdev_value = stdev(numbers)
+    variance_value = variance(numbers)
+    
+    return stdev_value, variance_value
+
+numbers = [1, 2, 3, 4, 4, 5, 5, 5, 6, 7, 8, 9, 9, 10]
+
+mean_value, median_value, mode_value = calculate_mean_median_mode(numbers)
+print(f"Mean: {mean_value}, Median: {median_value}, Mode: {mode_value}")
+
+stdev_value, variance_value = calculate_standard_deviation_variance(numbers)
+print(f"Standard Deviation: {stdev_value}, Variance: {variance_value}")
