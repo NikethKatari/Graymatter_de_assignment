@@ -1,0 +1,172 @@
+'''1. Number Categorizer
+ Write a Python program that prompts the user to enter a number between 1 and 100.
+o If the number is less than 50, print "The number is small."
+o If the number is between 50 and 75 (inclusive), print "The number is medium."
+o If the number is greater than 75, print "The number is large."
+o If the input is not a valid number or not in the range 1 to 100, print "Invalid input."
+o After printing the message, ask the user if they want to input another number. If yes, repeat the process; if no, end the program with a message "Thank you for using the program."
+o Ensure that the program continues to prompt for new numbers until the user decides to stop.'''
+def ques_one():
+    
+  n=int(input("enter the number between 1 and 100 :"))
+  if(n<50):
+    print("the number is small")
+  elif(n>=50 and n<=75):
+    print("The number is medium.")
+  elif(n>75 and n<=100):
+    print("The number is large.")
+  elif(n<1 or n>100):
+    print("Invalid input")
+  else:
+      print("Invalid input")
+  s=input(" Do you want to input another number answer in : Yes or No :")
+  if s=='Yes':
+      ques_one()
+  if s=='No':
+      return "Thank you for using the Program"
+ques_one()
+
+'''2. Even or Odd Checker
+ Write a program that asks the user to enter a number.
+o Check if the number is even or odd.
+o Print "The number is even" if the number is even, otherwise print "The number is odd."'''
+
+s=int(input("Enter a number"))
+if(s%2==0):
+    print("The number is even")
+else:
+    print("The number is odd")
+
+'''3. Simple Calculator
+ Write a program that performs basic arithmetic operations (addition, subtraction, multiplication, and division).
+o Prompt the user to enter two numbers and choose an operation (+, -, *, /).
+o Perform the chosen operation and display the result.
+o Handle division by zero errors with a suitable message.'''
+
+def arithmetic():
+    print("Select operation:")
+    print("1. Add")
+    print("2. Subtract")
+    print("3. Multiply")
+    print("4. Divide")
+
+    choice = input("Enter choice :  ")
+
+    if choice in ['1', '2', '3', '4']:
+        num1 = float(input("Enter first number: "))
+        num2 = float(input("Enter second number: "))
+
+        if choice == '1':
+            print(f"{num1} + {num2} = ")
+            print(num1+num2)
+        elif choice == '2':
+            print(f"{num1} - {num2} = ")
+            print(num1-num2)
+
+        elif choice == '3':
+            print(f"{num1} * {num2} = ")
+            print(num1*num2)
+
+        elif choice == '4':
+             try:
+                print(f"{num1}/{num2} :")
+                print(num1/num2)
+             except ZeroDivisionError:
+                print("Error! Division by zero.")
+    else:
+           print("Invalid input")
+    return 0
+arithmetic()
+
+'''4. Number Guessing Game
+ Write a program that randomly selects a number between 1 and 10.
+o Prompt the user to guess the number.
+o Provide feedback if the guess is too high or too low.
+o Allow the user to guess again until they ϐind the correct number.
+o Print a congratulatory message when the correct number is guessed'''
+
+import random
+
+def guess():
+    guess_num = random.randint(1, 10)
+    flag = False
+
+    print("Welcome to the Number Guessing Game!")
+    print("I'm thinking of a number between 1 and 10.")
+
+    while not flag:
+        try:
+            guess = int(input("Enter your guess: "))
+            if guess < 1 or guess > 10:
+                print("Please guess a number between 1 and 10.")
+            elif guess < number_to_guess:
+                print("Too low! Try again.")
+            elif guess > number_to_guess:
+                print("Too high! Try again.")
+            else:
+                flag = True
+                print("Congratulations! You guessed the correct number!")
+        except ValueError:
+            print("Invalid input. Please enter a number between 1 and 10.")
+guess()
+
+'''5. Multiplication Table
+ Write a program that prompts the user to enter a number.
+o Generate and display the multiplication table for that number (from 1 to 10).'''
+
+def multi_table():
+    n=int(input("Enter a number : "))
+    for i in range(1,11):
+        print(f"{n}*{i} = {n*i}")
+multi_table()
+
+'''6. Factorial Calculator
+ Write a program that prompts the user to enter a non-negative integer.
+o Calculate the factorial of the number (n!) using a loop.
+o Display the result.'''
+
+def Factorial():
+    n=int(input("enter a non-negative Integer : "))
+    i=n
+    while(i>=2):
+        
+        n=n*(i-1)
+        i=i-1
+    return n
+print(Factorial())
+
+'''7. Palindrome Checker
+ Write a program that prompts the user to enter a word or phrase.
+o Check if the entered text is a palindrome (reads the same forwards and backwards).
+o Print "The text is a palindrome" or "The text is not a palindrome" based on the result.'''
+
+def main():
+    user_input = input("Enter a word or phrase: ")
+    text = ''.join(user_input.split()).lower()
+    if text == text[::-1]:
+        print("The text is a palindrome")
+    else:
+        print("The text is not a palindrome")
+main()
+
+'''8. List Sum Calculator
+ Write a program that initializes a list of numbers.
+o Calculate and print the sum of all numbers in the list.
+o Prompt the user to enter a number to add to the list.
+o Update the list and print the new sum'''
+
+
+def Sum_Calc():
+    numbers = [1, 2, 3, 4, 5]
+    cur_sum = sum(numbers)
+    print(f"The sum of the initial list is: {cur_sum}")
+ 
+    try:
+        new_number = float(input("Enter a number to add to the list: "))
+        numbers.append(new_number)
+        new_sum = sum(numbers)
+        print(f"The new sum after adding {new_number} is: {new_sum}")
+    except ValueError:
+        print("Invalid input. Please enter a numeric value.")
+    return 0  
+Sum_Calc()
