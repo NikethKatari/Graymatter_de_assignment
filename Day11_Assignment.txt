@@ -40,5 +40,5 @@ learned things :
 ->logging in
 ->azure benefits
 ->creating resources
-->creating torage accounts
+->creating storage accounts
 ->creating containers
