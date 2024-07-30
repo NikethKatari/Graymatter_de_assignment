@@ -1,0 +1,44 @@
+class Employee:
+    def __init__(self,emp_id,name,age,salary):
+        self.emp_id=emp_id
+        self.name=name
+        self.age=age
+        self.salary=salary
+    def Calc(self, Percent):
+        self.salary+=self.salary*Percent
+    def display(self):
+        print(self.emp_id)
+        print(self.name)
+        print(self.age)
+        print(self.salary)
+employee=Employee(1718,"niketh",21,45000)
+employee.display()
+employee.Calc(0.5)
+employee.display()
+
+''' Function'''
+def add_numbers(a, b):
+    return a + b
+
+result = add_numbers(5, 3)
+print(f"The sum of 5 and 3 is: {result}")
+
+cloud models:
+private 
+public 
+hybrid
+
+cloud benefits:
+High availability
+scalability
+agility
+elasticity
+fault tolerance
+
+learned things :
+->what is azure
+->logging in
+->azure benefits
+->creating resources
+->creating torage accounts
+->creating containers
