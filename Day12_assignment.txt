@@ -1,0 +1,14 @@
+things done today:
+
+
+->creating resources
+->creating storage accounts
+->creating containers for source and destination
+->getting to know about Integration RunTimes and its types(ex: SHIR)
+->creating Data Factories
+->creating Linked Services
+->creating Datasets
+->Key-Vaults and creating secrets and providing access
+->hands-on on copy data activity
+->hands-on on Dataflow activity
+->overview of other activities
